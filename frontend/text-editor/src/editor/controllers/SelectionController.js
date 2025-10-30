@@ -275,7 +275,7 @@ export class SelectionController extends EventTarget {
    *
    * @param {HTMLElement} element
    */
-  #applyStylesToCurrentStyle(element) {
+  #applyStylesFromElementToCurrentStyle(element) {
     for (let index = 0; index < element.style.length; index++) {
       const styleName = element.style.item(index);
 
@@ -297,10 +297,10 @@ export class SelectionController extends EventTarget {
   #updateCurrentStyle(textSpan) {
     this.#applyDefaultStylesToCurrentStyle();
     const root = textSpan.parentElement.parentElement;
-    this.#applyStylesToCurrentStyle(root);
+    this.#applyStylesFromElementToCurrentStyle(root);
     const paragraph = textSpan.parentElement;
-    this.#applyStylesToCurrentStyle(paragraph);
-    this.#applyStylesToCurrentStyle(textSpan);
+    this.#applyStylesFromElementToCurrentStyle(paragraph);
+    this.#applyStylesFromElementToCurrentStyle(textSpan);
     return this;
   }
 
@@ -359,7 +359,7 @@ export class SelectionController extends EventTarget {
     // If focus node changed, we need to retrieve all the
     // styles of the current text span and dispatch an event
     // to notify that the styles have changed.
-    if (focusNodeChanges) {
+    if (focusNodeChanges || anchorNodeChanges) {
       this.#notifyStyleChange();
     }
 
@@ -378,25 +378,30 @@ export class SelectionController extends EventTarget {
    * Notifies that the styles have changed.
    */
   #notifyStyleChange() {
-    const textSpan = this.focusTextSpan;
-    if (textSpan) {
-      this.#updateCurrentStyle(textSpan);
-      this.dispatchEvent(
-        new CustomEvent("stylechange", {
-          detail: this.#currentStyle,
-        }),
-      );
-    } else {
-      const firstTextSpan =
-        this.#textEditor.root?.firstElementChild?.firstElementChild;
-      if (firstTextSpan) {
-        this.#updateCurrentStyle(firstTextSpan);
+    if (this.#range.isCollapsed) {
+      // CARET
+      const textSpan = this.focusTextSpan;
+      if (textSpan) {
+        this.#updateCurrentStyle(textSpan);
         this.dispatchEvent(
           new CustomEvent("stylechange", {
             detail: this.#currentStyle,
           }),
         );
+      } else {
+        const firstTextSpan =
+          this.#textEditor.root?.firstElementChild?.firstElementChild;
+        if (firstTextSpan) {
+          this.#updateCurrentStyle(firstTextSpan);
+          this.dispatchEvent(
+            new CustomEvent("stylechange", {
+              detail: this.#currentStyle,
+            }),
+          );
+        }
       }
+    } else {
+      // SELECTION.
     }
   }
 
@@ -426,6 +431,22 @@ export class SelectionController extends EventTarget {
       }
     }
     document.addEventListener("selectionchange", this.#onSelectionChange);
+  }
+
+  /**
+   * Disposes the current resources.
+   */
+  dispose() {
+    document.removeEventListener("selectionchange", this.#onSelectionChange);
+    this.#textEditor = null;
+    this.#ranges.clear();
+    this.#ranges = null;
+    this.#range = null;
+    this.#selection = null;
+    this.#focusNode = null;
+    this.#anchorNode = null;
+    this.#mutations.dispose();
+    this.#mutations = null;
   }
 
   /**
@@ -502,6 +523,8 @@ export class SelectionController extends EventTarget {
    * Marks the start of a mutation.
    *
    * Clears all the mutations kept in CommandMutations.
+   *
+   * @returns {boolean}
    */
   startMutation() {
     this.#mutations.clear();
@@ -512,7 +535,7 @@ export class SelectionController extends EventTarget {
   /**
    * Marks the end of a mutation.
    *
-   * @returns
+   * @returns {CommandMutations}
    */
   endMutation() {
     return this.#mutations;
@@ -520,6 +543,8 @@ export class SelectionController extends EventTarget {
 
   /**
    * Selects all content.
+   *
+   * @returns {SelectionController}
    */
   selectAll() {
     if (this.#textEditor.isEmpty) {
@@ -575,6 +600,8 @@ export class SelectionController extends EventTarget {
 
   /**
    * Moves cursor to end.
+   *
+   * @returns {SelectionController}
    */
   cursorToEnd() {
     const range = document.createRange(); //Create a range (a range is a like the selection but invisible)
@@ -660,22 +687,6 @@ export class SelectionController extends EventTarget {
         );
       }
     }
-  }
-
-  /**
-   * Disposes the current resources.
-   */
-  dispose() {
-    document.removeEventListener("selectionchange", this.#onSelectionChange);
-    this.#textEditor = null;
-    this.#ranges.clear();
-    this.#ranges = null;
-    this.#range = null;
-    this.#selection = null;
-    this.#focusNode = null;
-    this.#anchorNode = null;
-    this.#mutations.dispose();
-    this.#mutations = null;
   }
 
   /**
@@ -1131,11 +1142,15 @@ export class SelectionController extends EventTarget {
    * @param {DocumentFragment} fragment
    */
   insertPaste(fragment) {
+    const hasOnlyOneParagraph = fragment.children.length === 1;
+    const forceTextSpan =
+      fragment.firstElementChild?.dataset?.textSpan === "force";
     if (
-      fragment.children.length === 1 &&
-      fragment.firstElementChild?.dataset?.textSpan === "force"
+      hasOnlyOneParagraph &&
+      forceTextSpan
     ) {
-      const collapseNode = fragment.firstElementChild.firstChild;
+      // first text span
+      const collapseNode = fragment.firstElementChild.firstElementChild;
       if (this.isTextSpanStart) {
         this.focusTextSpan.before(...fragment.firstElementChild.children);
       } else if (this.isTextSpanEnd) {
@@ -1147,7 +1162,9 @@ export class SelectionController extends EventTarget {
           newTextSpan,
         );
       }
-      return this.collapse(collapseNode, collapseNode.nodeValue?.length || 0);
+      // collapseNode could be a <br>, that's why we need to
+      // make `nodeValue` as optional.
+      return this.collapse(collapseNode, collapseNode?.nodeValue?.length || 0);
     }
     const collapseNode = this.#getFragmentParagraphTextNode(fragment);
     if (this.isParagraphStart) {

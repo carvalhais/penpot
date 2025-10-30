@@ -223,6 +223,14 @@ export class WorkspacePage extends BaseWebSocketPage {
     await this.page.mouse.up();
   }
 
+  async clickAndMove(x1, y1, x2, y2) {
+    await this.page.waitForTimeout(100);
+    await this.viewport.hover({ position: { x: x1, y: y1 } });
+    await this.page.mouse.down();
+    await this.viewport.hover({ position: { x: x2, y: y2 } });
+    await this.page.mouse.up();
+  }
+
   async panOnViewportAt(x, y, width, height) {
     await this.page.waitForTimeout(100);
     await this.viewport.hover({ position: { x, y } });
