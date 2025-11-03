@@ -37,7 +37,7 @@ This command is going to search for the file located in `frontend/src/app/main/u
 
 ## How it works?
 
-The text editor divides the content in three elements: `root`, `paragraph` and `inline`. An `inline` in terms of content is a styled element that it is displayed in a line inside a block and an `inline` only can have one child (a Text node). A `paragraph` is a **block** element that can contain multiple `inline`s (**inline** elements).
+The text editor divides the content in three elements: `root`, `paragraph` and `textSpan`. An `textSpan` in terms of content is a styled element that it is displayed in a line inside a block and an `textSpan` only can have one child (a Text node). A `paragraph` is a **block** element that can contain multiple `textSpan`s (**textSpan** elements).
 
 ```html
 <div data-itype="root">
@@ -53,10 +53,10 @@ This way we only need to deal with a structure like this, where circular nodes a
 ```mermaid
 flowchart TB
   root((root)) --> paragraph((paragraph))
-  paragraph --> inline_1((inline))
-  paragraph --> inline_2((inline))
-  inline_1 --> text_1[Hello, ]
-  inline_2 --> text_2[World!]
+  paragraph --> text_span_1((textSpan))
+  paragraph --> text_span_2((textSpan))
+  text_span_1 --> text_1[Hello, ]
+  text_span_2 --> text_2[World!]
 ```
 
 This is compatible with the way Penpot stores text content.
@@ -67,6 +67,20 @@ flowchart TB
   paragraph-set --> paragraph((paragraph))
   paragraph --> text((text))
 ```
+
+## How the TextEditor works?
+
+```mermaid
+flowchart TB
+  TextEditor -->|handles `selectionchange` events| SelectionController
+  TextEditor -->|handles how the editor dispatches changes| ChangeController
+```
+
+The `TextEditor` keeps a reference to a series of elements, one of them is a `contenteditable` element that keeps the sub-elements explained before (root, paragraphs and textspans).
+
+`SelectionController` listens to the `document` event called `selectionchange`. This event is called everytime the focus/selection of the browser changes.
+
+`ChangeController` is called by the `TextEditor` instance everytime a change is performed on the content of the `contenteditable` element.
 
 ## How the code is organized?
 
