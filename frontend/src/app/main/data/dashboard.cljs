@@ -76,7 +76,8 @@
     ptk/UpdateEvent
     (update [_ state]
       (reduce (fn [state {:keys [id] :as project}]
-                (update-in state [:projects id] merge project))
+                  ;; Replace completely instead of merge to ensure deleted-at is removed
+                (assoc-in state [:projects id] project))
               state
               projects))))
 
@@ -151,6 +152,34 @@
     (watch [_ _ _]
       (->> (rp/cmd! :get-builtin-templates)
            (rx/map builtin-templates-fetched)))))
+
+;; --- EVENT: deleted-files
+
+(defn- deleted-files-fetched
+  [files]
+  (ptk/reify ::deleted-files-fetched
+    ptk/UpdateEvent
+    (update [_ state]
+      (let [now (ct/now)
+            filtered-files (filterv (fn [file]
+                                      (let [will-be-deleted-at (:will-be-deleted-at file)]
+                                        (or (nil? will-be-deleted-at)
+                                            (ct/is-after? will-be-deleted-at now))))
+                                    files)
+            files (d/index-by :id filtered-files)]
+        (-> state
+            (assoc :deleted-files files)
+            (update :files d/merge files))))))
+
+(defn fetch-deleted-files
+  ([] (fetch-deleted-files nil))
+  ([team-id]
+   (ptk/reify ::fetch-deleted-files
+     ptk/WatchEvent
+     (watch [_ state _]
+       (when-let [team-id (or team-id (:current-team-id state))]
+         (->> (rp/cmd! :get-team-deleted-files {:team-id team-id})
+              (rx/map deleted-files-fetched)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data Selection
@@ -656,3 +685,57 @@
     :team-role-change       (handle-change-team-role msg)
     :team-membership-change (dcm/team-membership-change msg)
     nil))
+
+
+;; --- Delete files immediately
+
+(defn delete-files-immediately
+  [{:keys [team-id ids] :as params}]
+  (dm/assert! (uuid? team-id))
+  (dm/assert! (set? ids))
+  (dm/assert! (every? uuid? ids))
+
+  (ptk/reify ::delete-files-immediately
+    ev/Event
+    (-data [_]
+      {:team-id team-id
+       :num-files (count ids)})
+
+    ptk/WatchEvent
+    (watch [_ _ _]
+      (let [{:keys [on-success on-error]
+             :or {on-success identity
+                  on-error rx/throw}} (meta params)]
+        (->> (rp/cmd! :permanently-delete-team-files {:team-id team-id :ids ids})
+             (rx/tap on-success)
+             (rx/catch on-error))))))
+
+;; --- Restore deleted files immediately
+
+(defn restore-files-immediately
+  [{:keys [team-id ids] :as params}]
+  (dm/assert! (uuid? team-id))
+  (dm/assert! (set? ids))
+  (dm/assert! (every? uuid? ids))
+
+  (ptk/reify ::restore-files-immediately
+    ev/Event
+    (-data [_]
+      {:team-id team-id
+       :num-files (count ids)})
+
+    ptk/WatchEvent
+    (watch [_ _ _]
+      (let [{:keys [on-success on-error]
+             :or {on-success identity
+                  on-error rx/throw}} (meta params)]
+
+        (->> (rp/cmd! ::sse/restore-deleted-team-files {:team-id team-id :ids ids})
+             (rx/tap (fn [event]
+                       (let [payload (sse/get-payload event)
+                             type    (sse/get-type event)]
+                         (println "Restore SSE event:" type payload))))
+             (rx/filter sse/end-of-stream?)
+             (rx/map sse/get-payload)
+             (rx/tap on-success)
+             (rx/catch on-error))))))

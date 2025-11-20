@@ -11,6 +11,7 @@
    [app.main.data.common :as dcm]
    [app.main.data.dashboard :as dd]
    [app.main.data.modal :as modal]
+   [app.main.data.notifications :as ntf]
    [app.main.refs :as refs]
    [app.main.store :as st]
    [app.main.ui.components.context-menu-a11y :refer [context-menu*]]
@@ -46,7 +47,12 @@
 
         restore-fn
         (fn [_]
-          (println "Restoring project with file IDs:" file-ids))
+          (st/emit! (dd/restore-files-immediately
+                     (with-meta {:team-id team-id :ids file-ids}
+                       {:on-success #(st/emit! (ntf/success (tr "dashboard.success-restore-immediately" (:name project)))
+                                               (dd/fetch-projects team-id)
+                                               (dd/fetch-deleted-files team-id))
+                        :on-error #(st/emit! (ntf/error (tr "dashboard.error-restore-project" (:name project))))}))))
 
         on-restore-project
         (fn []
@@ -60,7 +66,12 @@
 
         delete-fn
         (fn [_]
-          (println "Deleting project forever with file IDs:" file-ids))
+          (st/emit! (ntf/success (tr "dashboard.success-delete-immediately" (:name project)))
+                    (dd/delete-files-immediately
+                     {:team-id team-id
+                      :ids file-ids})
+                    (dd/fetch-projects team-id)
+                    (dd/fetch-deleted-files team-id)))
 
         on-delete-project
         (fn []
@@ -215,11 +226,26 @@
          (fn []
            (when deleted-map
              (let [file-ids (into #{} (keys deleted-map))]
-               (println "Clearing all deleted files with IDs:" file-ids)))))
+               (when (seq file-ids)
+                 (st/emit!
+                  (modal/show {:type :confirm
+                               :title (tr "dashboard.delete-forever-modal.title")
+                               :message (tr "dashboard.delete-forever-modal.all.description" (count file-ids))
+                               :accept-label (tr "dashboard.deleted.delete-forever")
+                               :on-accept #(st/emit!
+                                            (dd/delete-files-immediately
+                                             {:team-id team-id
+                                              :ids file-ids})
+                                            (dd/fetch-projects team-id)
+                                            (dd/fetch-deleted-files team-id))})))))))
 
         restore-fn
         (fn [file-ids]
-          (println "Restoring all deleted files with IDs:" file-ids))
+          (st/emit! (dd/restore-files-immediately
+                     (with-meta {:team-id team-id :ids file-ids}
+                       {:on-success #(st/emit! (dd/fetch-projects team-id)
+                                               (dd/fetch-deleted-files team-id))
+                        :on-error #(st/emit! (ntf/error (tr "dashboard.error-restore-files")))}))))
 
         on-restore-all
         (mf/use-fn
@@ -244,6 +270,7 @@
 
     (mf/with-effect [team-id]
       (st/emit! (dd/fetch-projects team-id)
+                (dd/fetch-deleted-files team-id)
                 (dd/clear-selected-files)))
 
     [:*
