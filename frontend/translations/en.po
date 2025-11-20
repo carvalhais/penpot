@@ -8398,3 +8398,114 @@ msgstr "Autosaved versions will be kept for %s days."
 #, unused
 msgid "workspace.viewport.click-to-close-path"
 msgstr "Click to close the path"
+
+msgid "dashboard.labels.recent"
+msgstr "Recent"
+
+msgid "dashboard.labels.deleted"
+msgstr "Deleted"
+
+msgid "dashboard.deleted.restore-all"
+msgstr "Restore All"
+
+msgid "dashboard.deleted.clear"
+msgstr "Clear trash"
+
+msgid "dashboard.restore-file"
+msgstr "Restore file"
+
+msgid "dashboard.delete-file"
+msgstr "Delete file"
+
+msgid "dashboard.deleted.restore-project"
+msgstr "Restore project"
+
+msgid "dashboard.deleted.delete-project"
+msgstr "Delete project"
+
+msgid "dashboard.deleted.info-text"
+msgstr "Deleted files will remain in the trash for"
+
+msgid "dashboard.deleted.info-days"
+msgstr " %s days. "
+
+msgid "dashboard.deleted.info-text2"
+msgstr "After that, they will be permanently deleted."
+
+msgid "dashboard.deleted.restore-text"
+msgstr "If you change your mind, you can restore them or delete them permanently from each file's menu."
+
+msgid "dashboard.restore-modal.all.title"
+msgstr "Restore all projects and files"
+
+msgid "dashboard.restore-modal.all.description"
+msgstr "You're going to restore all your projects and files. This may take a while."
+
+msgid "dashboard.restore-modal.file.title"
+msgstr "Restore file"
+
+msgid "dashboard.restore-modal.file.description"
+msgstr "You're going to restore %s."
+
+msgid "dashboard.restore-modal.project.title"
+msgstr "Restore Project"
+
+msgid "dashboard.restore-modal.project.description"
+msgstr "You're going to restore %s project and all the files contained in it."
+
+msgid "dashboard.delete-forever-modal.title"
+msgstr "Delete forever"
+
+msgid "dashboard.delete-forever-modal.all.description"
+msgstr "Are you sure you want to delete forever all your deleted projects and files? This is a non reversible action."
+
+msgid "dashboard.delete-forever-modal.file.description"
+msgstr "Are you sure you want to delete forever %s? This is a non reversible action."
+
+msgid "dashboard.delete-forever-modal.project.description"
+msgstr "Are you sure you want to delete forever %s project? You're going to delete it forever an all of the files contained in it. This is a non reeversible action."
+
+msgid "dashboard.deleted.delete-forever"
+msgstr "Delete forever"
+
+msgid "dashboard.success-restore-immediately"
+msgstr "%s has been successfully restored."
+
+msgid "dashboard.success-delete-immediately"
+msgstr "%s has been successfully deleted."
+
+msgid "dashboard.error-restore-files"
+msgstr "There was an error while restoring the files."
+
+msgid "dashboard.error-restore-file"
+msgstr "There was an error while restoring the file %s."
+
+msgid "dashboard.error-restore-project"
+msgstr "There was an error while restoring the project %s and its files."
+
+msgid "workspace.options.exporting-complete"
+msgstr "Export completed"
+
+msgid "workspace.options.restoring-object"
+msgstr "Restoring files…"
+
+msgid "workspace.options.restoring-object-error"
+msgstr "Restore failed"
+
+msgid "workspace.options.restoring-object-slow"
+msgstr "Restore unexpectedly slow"
+
+msgid "workspace.options.restoring-complete"
+msgstr "Restore completed"
+
+msgid "workspace.options.processing-object"
+msgstr "Processing…"
+
+msgid "workspace.options.processing-object-error"
+msgstr "Process failed"
+
+msgid "workspace.options.processing-object-slow"
+msgstr "Process unexpectedly slow"
+
+msgid "workspace.options.processing-complete"
+msgstr "Process completed"
