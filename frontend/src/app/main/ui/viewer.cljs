@@ -642,4 +642,3 @@
 
     [:> loader*  {:title (tr "labels.loading")
                   :overlay true}]))
-

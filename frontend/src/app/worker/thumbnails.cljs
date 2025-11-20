@@ -24,7 +24,8 @@
    [okulary.core :as l]
    [promesa.core :as p]
    [rumext.v2 :as mf]
-   [shadow.esm :refer (dynamic-import)]))
+   [shadow.esm :refer (dynamic-import)]
+   ))
 
 (log/set-level! :trace)
 

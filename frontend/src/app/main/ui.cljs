@@ -33,25 +33,26 @@
    [app.util.i18n :refer [tr]]
    [app.util.theme :as theme]
    [beicon.v2.core :as rx]
+   [app.util.modules :as mod]
    [rumext.v2 :as mf]))
 
 (def auth-page
-  (mf/lazy-component app.main.ui.auth/auth))
+  (mf/lazy #(mod/load app.main.ui.auth/auth)))
 
 (def verify-token-page
-  (mf/lazy-component app.main.ui.auth.verify-token/verify-token))
+  (mf/lazy #(mod/load app.main.ui.auth.verify-token/verify-token)))
 
 (def viewer-page*
-  (mf/lazy-component app.main.ui.viewer/viewer*))
+  (mf/lazy #(mod/load app.main.ui.viewer/viewer*)))
 
 (def dashboard-page*
-  (mf/lazy-component app.main.ui.dashboard/dashboard*))
+  (mf/lazy #(mod/load app.main.ui.dashboard/dashboard*)))
 
 (def settings-page*
-  (mf/lazy-component app.main.ui.settings/settings*))
+  (mf/lazy #(mod/load app.main.ui.settings/settings*)))
 
 (def workspace-page*
-  (mf/lazy-component app.main.ui.workspace/workspace*))
+  (mf/lazy #(mod/load app.main.ui.workspace/workspace*)))
 
 (mf/defc workspace-legacy-redirect*
   {::mf/props :obj

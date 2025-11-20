@@ -19,9 +19,8 @@
   </head>
   <body>
     {{# manifest}}
-    <script src="js/libs.js?ts={{& ts}}"></script>
-    <script src="{{& shared}}"></script>
-    <script src="{{& rasterizer}}"></script>
+    <script type="module" src="js/libs.js?ts={{& ts}}"></script>
+    <script type="module" src="{{& rasterizer}}"></script>
     {{/manifest}}
   </body>
 </html>
