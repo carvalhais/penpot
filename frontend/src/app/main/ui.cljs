@@ -224,7 +224,7 @@
         :dashboard-invitations
         :dashboard-webhooks
         :dashboard-settings
-         :dashboard-deleted)
+        :dashboard-deleted)
        (let [params        (get params :query)
              team-id       (some-> params :team-id uuid/parse*)
              project-id    (some-> params :project-id uuid/parse*)

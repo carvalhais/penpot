@@ -634,3 +634,20 @@
 (def restore
   (l/derived :restore st/state))
 
+(def restore-in-progress?
+  (l/derived :in-progress restore))
+
+(def restore-error?
+  (l/derived :error restore))
+
+(def restore-progress
+  (l/derived :progress restore))
+
+(def restore-detail-visibililty
+  (l/derived :detail-visible restore))
+
+(def restore-widget-visibililty
+  (l/derived :widget-visible restore))
+
+(def restore-health
+  (l/derived :healthy? restore))
