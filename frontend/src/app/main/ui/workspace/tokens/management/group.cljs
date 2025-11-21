@@ -15,12 +15,65 @@
    [app.main.store :as st]
    [app.main.ui.context :as ctx]
    [app.main.ui.ds.buttons.icon-button :refer [icon-button*]]
-   [app.main.ui.ds.foundations.assets.icon :as i]
+   [app.main.ui.ds.foundations.assets.icon :as i :refer [icon*]]
    [app.main.ui.workspace.sidebar.assets.common :as cmm]
    [app.main.ui.workspace.tokens.management.token-pill :refer [token-pill*]]
    [app.util.dom :as dom]
    [app.util.i18n :refer [tr]]
-   [rumext.v2 :as mf]))
+   [cuerdas.core :as str]
+   [rumext.v2 :as mf]
+   [cljs.pprint :as pp]))
+
+(defn- parse-token-path
+  "Splits a token name into path segments"
+  [token-name]
+  (str/split token-name #"\."))
+
+(defn group-by-first-segment
+  "Groups tokens by their first path segment."
+  [tokens]
+  (reduce (fn [acc token]
+            (let [[first-segment & rest-segments] (parse-token-path (:name token))
+                  rest-path (when (seq rest-segments) (str/join "." rest-segments))]
+              (update acc first-segment (fnil conj [])
+                      (if rest-path
+                        (assoc token :name rest-path)
+                        token))))
+          {}
+          tokens))
+
+(defn build-tree-node
+  "Builds a single tree node with lazy children."
+  [segment-name segment-tokens parent-path depth]
+  (let [current-path (if parent-path
+                       (str parent-path "." segment-name)
+                       segment-name)
+        is-leaf (every? (fn [token]
+                  (let [path-segments (parse-token-path (:name token))
+                    segment-count (count path-segments)]
+                  (= 1 segment-count)))
+                segment-tokens)
+        leaf-token (when is-leaf (first segment-tokens))]
+    {:name segment-name
+     :path current-path
+     :depth depth
+     :is-token is-leaf
+     :token leaf-token
+     :has-children (not is-leaf)
+     :children-fn (when-not is-leaf
+                    (fn []
+                      (let [grouped (group-by-first-segment segment-tokens)]
+                        (mapv (fn [[name tokens]]
+                                (build-tree-node name tokens current-path (inc depth)))
+                              grouped))))}))
+
+(defn build-tree-root
+  "Builds the root level of the tree."
+  [tokens]
+  (let [grouped (group-by-first-segment tokens)]
+    (mapv (fn [[segment-name segment-tokens]]
+            (build-tree-node segment-name segment-tokens nil 0))
+          grouped)))
 
 (defn token-section-icon
   [type]
@@ -44,6 +97,42 @@
     :dimensions "expand"
     :sizing "expand"
     "add"))
+
+(mf/defc folder-node*
+  {::mf/private true}
+  [{:keys [node on-toggle]}]
+  (let [expanded* (mf/use-state false)
+        expanded (deref expanded*)
+        swap-folder-expanded #(swap! expanded* not)]
+    [:div {:class (stl/css :folder-node)}
+     [:button {:class (stl/css :folder-node-button)
+               :on-click swap-folder-expanded}
+      (if expanded
+        [:> icon* {:icon-id i/arrow-down :class (stl/css :folder-node-icon)}]
+        [:> icon* {:icon-id i/arrow-right :class (stl/css :folder-node-icon)}])
+      [:span {:class (stl/css :folder-node-name)} (:name node)]]
+     (when expanded
+       (let [children-fn (:children-fn node)]
+         (when children-fn
+           (let [children (children-fn)]
+             (for [child children]
+               (if (:is-token child)
+                 [:> token-pill* {:token (:token child)}]
+                 [:> folder-node* {:node child :on-toggle on-toggle}]))))))]))
+
+(mf/defc token-tree*
+  {::mf/private true}
+  [{:keys [tokens]}]
+  (let [tree (build-tree-root tokens)]
+    [:div {:class (stl/css :token-tree-wrapper)}
+     (for [node tree]
+       (let [_ (pp/pprint node)]
+         [:div {:key (:path node)}
+          (if (:is-token node)
+          ;; Render token pill
+            [:> token-pill* {:token (:token node)}]
+          ;; Render segment folder
+            [:> folder-node* {:node node}])]))]))
 
 (mf/defc token-group*
   {::mf/private true}
@@ -100,21 +189,16 @@
              (st/emit! (dwta/toggle-token {:token token
                                            :shape-ids selected-ids})))))]
 
-    [:div {:on-click on-toggle-open-click :class (stl/css :token-section-wrapper)}
-     [:> cmm/asset-section* {:icon (token-section-icon type)
-                             :title title
-                             :section :tokens
-                             :assets-count (count tokens)
-                             :is-open is-open}
-      [:> cmm/asset-section-block* {:role :title-button}
-       (when can-edit?
-         [:> icon-button* {:on-click on-popover-open-click
-                           :variant "ghost"
-                           :icon i/add
-                           :id (str "add-token-button-" title)
-                           :aria-label (tr "workspace.tokens.add-token" title)}])]
+    [:div {:class (stl/css :token-section-wrapper)}
+
+     [:div
+      [:span {:on-click on-toggle-open-click} title]
       (when is-open
-        [:> cmm/asset-section-block* {:role :content}
+        [:div
+         [:> token-tree* {:tokens tokens
+                                       ;; :on-token-pill-click on-token-pill-click
+                                       ;; :on-context-menu on-context-menu
+                          }]
          [:div {:class (stl/css :token-pills-wrapper)}
           (for [token tokens]
             [:> token-pill*
@@ -125,3 +209,4 @@
               :active-theme-tokens active-theme-tokens
               :on-click on-token-pill-click
               :on-context-menu on-context-menu}])]])]]))
+

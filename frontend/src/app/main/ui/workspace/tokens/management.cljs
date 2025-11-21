@@ -2,6 +2,7 @@
   (:require-macros [app.main.style :as stl])
   (:require
    [app.common.data :as d]
+   [app.common.data.macros :as dm]
    [app.common.types.shape.layout :as ctsl]
    [app.common.types.tokens-lib :as ctob]
    [app.config :as cf]
@@ -16,6 +17,7 @@
    [app.main.ui.workspace.tokens.management.group :refer [token-group*]]
    [app.util.array :as array]
    [app.util.i18n :refer [tr]]
+   [cljs.pprint :as pp]
    [okulary.core :as l]
    [rumext.v2 :as mf]))
 
@@ -150,18 +152,18 @@
      (for [type filled-group]
        (let [tokens (get tokens-by-type type)]
          [:> token-group* {:key (name type)
+                           :tokens tokens
                            :is-open (get open-status type false)
                            :type type
                            :selected-ids selected
                            :selected-shapes selected-shapes
                            :is-selected-inside-layout is-selected-inside-layout
-                           :active-theme-tokens resolved-active-tokens
-                           :tokens tokens}]))
+                           :active-theme-tokens resolved-active-tokens}]))
 
      (for [type empty-group]
        [:> token-group* {:key (name type)
+                         :tokens []
                          :type type
                          :selected-shapes selected-shapes
-                         :is-selected-inside-layout :is-selected-inside-layout
-                         :active-theme-tokens resolved-active-tokens
-                         :tokens []}])]))
+                         :is-selected-inside-layout is-selected-inside-layout
+                         :active-theme-tokens resolved-active-tokens}])]))
