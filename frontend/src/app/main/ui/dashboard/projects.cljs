@@ -384,10 +384,12 @@
                                                           show-team-hero?
                                                           can-invite))}
           [:div {:class (stl/css :nav-options)}
-           [:div {:class (stl/css :selected)}
+           [:div {:class (stl/css :selected)
+                  :data-testid "recent-tab"}
             (tr "dashboard.labels.recent")]
            [:> button* {:variant "ghost"
                         :type "button"
+                        :data-testid "deleted-tab"
                         :on-click on-deleted-click}
             (tr "dashboard.labels.deleted")]]
           (for [{:keys [id] :as project} projects]

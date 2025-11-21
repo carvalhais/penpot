@@ -1,0 +1,47 @@
+[
+  {
+    "id": "c7ce0794-0992-8105-8004-38e630f41234",
+    "revn": 1,
+    "vern": 1,
+    "project_id": "c7ce0794-0992-8105-8004-38e630f7920b",
+    "created_at": "2024-01-15T10:30:00.000Z",
+    "modified_at": "2024-11-20T14:45:00.000Z",
+    "deleted_at": "2024-11-20T14:45:00.000Z",
+    "name": "Deleted Design File 1",
+    "is_shared": false,
+    "will_be_deleted_at": "2024-11-27T14:45:00.000Z",
+    "thumbnail_id": null,
+    "row_num": 1,
+    "team_id": "c7ce0794-0992-8105-8004-38e630f40f6d"
+  },
+  {
+    "id": "c7ce0794-0992-8105-8004-38e630f41235",
+    "revn": 2,
+    "vern": 2,
+    "project_id": "c7ce0794-0992-8105-8004-38e630f7920b",
+    "created_at": "2024-01-10T08:15:00.000Z",
+    "modified_at": "2024-11-19T12:30:00.000Z",
+    "deleted_at": "2024-11-19T12:30:00.000Z",
+    "name": "Deleted Design File 2",
+    "is_shared": true,
+    "will_be_deleted_at": "2024-11-26T12:30:00.000Z",
+    "thumbnail_id": null,
+    "row_num": 2,
+    "team_id": "c7ce0794-0992-8105-8004-38e630f40f6d"
+  },
+  {
+    "id": "c7ce0794-0992-8105-8004-38e630f41236",
+    "revn": 3,
+    "vern": 3,
+    "project_id": "c7ce0794-0992-8105-8004-38e630f7920c",
+    "created_at": "2024-02-01T14:20:00.000Z",
+    "modified_at": "2024-11-18T16:00:00.000Z",
+    "deleted_at": "2024-11-18T16:00:00.000Z",
+    "name": "Old Project Design",
+    "is_shared": false,
+    "will_be_deleted_at": "2024-11-25T16:00:00.000Z",
+    "thumbnail_id": null,
+    "row_num": 3,
+    "team_id": "c7ce0794-0992-8105-8004-38e630f40f6d"
+  }
+]

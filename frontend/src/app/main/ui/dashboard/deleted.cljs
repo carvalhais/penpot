@@ -281,10 +281,12 @@
 
         [:div {:class (stl/css :nav-options)}
          [:> button* {:variant "ghost"
+                      :data-testid "recent-tab"
                       :type "button"
                       :on-click on-recent-click}
           (tr "dashboard.labels.recent")]
-         [:div {:class (stl/css :selected)}
+         [:div {:class (stl/css :selected)
+                :data-testid "deleted-tab"}
           (tr "dashboard.labels.deleted")]]
 
         [:div {:class (stl/css :deleted-content)}
