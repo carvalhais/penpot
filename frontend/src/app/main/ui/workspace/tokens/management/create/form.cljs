@@ -41,6 +41,7 @@
    [app.main.ui.workspace.tokens.management.create.input-token-color-bullet :refer [input-token-color-bullet*]]
    [app.main.ui.workspace.tokens.management.create.input-tokens-value :refer [input-token* token-value-hint*]]
    [app.main.ui.workspace.tokens.management.create.text-case :as text-case]
+   [app.main.ui.workspace.tokens.management.create.typography :as typography]
    [app.util.dom :as dom]
    [app.util.functions :as uf]
    [app.util.i18n :refer [tr]]
