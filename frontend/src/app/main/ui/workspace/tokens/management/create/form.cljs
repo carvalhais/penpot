@@ -31,7 +31,6 @@
    [app.main.ui.ds.foundations.assets.icon :as i]
    [app.main.ui.ds.foundations.typography.heading :refer [heading*]]
    [app.main.ui.ds.notifications.context-notification :refer [context-notification*]]
-   [app.main.ui.icons :as deprecated-icon]
    [app.main.ui.workspace.colorpicker :as colorpicker]
    [app.main.ui.workspace.colorpicker.ramp :refer [ramp-selector*]]
    [app.main.ui.workspace.sidebar.options.menus.typography :refer [font-selector*]]
@@ -736,11 +735,11 @@
                          :selected (if reference-tab-active? "reference" "composite")
                          :on-change on-toggle-tab
                          :name "reference-composite-tab"}
-       [:& radio-button {:icon deprecated-icon/layers
+       [:& radio-button {:icon i/layers
                          :value "composite"
                          :title (tr "workspace.tokens.individual-tokens")
                          :id "composite-opt"}]
-       [:& radio-button {:icon deprecated-icon/tokens
+       [:& radio-button {:icon i/tokens
                          :value "reference"
                          :title (tr "workspace.tokens.use-reference")
                          :id "reference-opt"}]]]
@@ -975,11 +974,11 @@
                         :name (str "inset-select-" shadow-idx)}
       [:& radio-button {:value "false"
                         :title "false"
-                        :icon "❌"
+                        :icon i/close
                         :id (str "inset-default-" shadow-idx)}]
       [:& radio-button {:value "true"
                         :title "true"
-                        :icon "✅"
+                        :icon i/tick
                         :id (str "inset-false-" shadow-idx)}]]]))
 
 (mf/defc shadow-input*
