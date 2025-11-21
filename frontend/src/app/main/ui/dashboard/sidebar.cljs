@@ -34,7 +34,6 @@
                                                subscription-sidebar*]]
    [app.main.ui.dashboard.team-form]
    [app.main.ui.ds.foundations.assets.icon :refer [icon*] :as i]
-   [app.main.ui.exports.assets :refer [progress-widget]]
    [app.main.ui.icons :as deprecated-icon]
    [app.util.dom :as dom]
    [app.util.dom.dnd :as dnd]
