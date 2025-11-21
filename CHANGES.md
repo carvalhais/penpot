@@ -11,7 +11,6 @@ The backend RPC API URLS are changed from `/api/rpc/command/<name>` to
 compatibility; however, if you are a user of this API, it is strongly
 recommended that you adapt your code to use the new PATH.
 
-
 #### Updated SSO Callback URL
 
 The OAuth / Single Sign-On (SSO) callback endpoint has changed to
@@ -44,7 +43,6 @@ This update standardizes all authentication flows under the single URL
 and makis it more modular, enabling the ability to configure SSO auth
 provider dinamically.
 
-
 #### Changes on default docker compose
 
 We have updated the `docker/images/docker-compose.yaml` with a small
@@ -52,7 +50,6 @@ change related to the `PENPOT_SECRET_KEY`. Since this version, this
 environment variable is also required on exporter. So if you are using
 penpot on-premise you will need to apply the same changes on your own
 `docker-compose.yaml` file.
-
 
 ### :rocket: Epics and highlights
 
@@ -65,6 +62,7 @@ penpot on-premise you will need to apply the same changes on your own
 - Make the file export process more reliable [Taiga #12555](https://tree.taiga.io/project/penpot/us/12555)
 - Add auth flow changes [Taiga #12333](https://tree.taiga.io/project/penpot/us/12333)
 - Add new shape validation mechanism for shapes [Github #7696](https://github.com/penpot/penpot/pull/7696)
+- Add deleted files to dashboard [Taiga #8149](https://tree.taiga.io/project/penpot/us/8149)
 
 ### :bug: Bugs fixed
 
