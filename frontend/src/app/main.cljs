@@ -16,7 +16,7 @@
    [app.main.data.profile :as dp]
    [app.main.data.websocket :as ws]
    [app.main.errors]
-   ;; [app.main.rasterizer :as thr]
+   [app.main.rasterizer :as thr]
    [app.main.store :as st]
    [app.main.ui :as ui]
    [app.main.ui.alert]
@@ -94,7 +94,7 @@
   (mw/init!)
   (i18n/init! cf/translations)
   (cur/init-styles)
-  ;; (thr/init!)
+  (thr/init!)
   (init-ui)
   (st/emit! (plugins/initialize)
             (initialize)))

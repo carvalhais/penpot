@@ -99,3 +99,8 @@
       [:> static/invalid-token {}]
       [:> loader*  {:title (tr "labels.loading")
                     :overlay true}])))
+
+(mf/defc verify-token-page*
+  {::mf/lazy-load true}
+  [props]
+  [:> verify-token* props])

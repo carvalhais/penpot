@@ -16,9 +16,6 @@
 (def highlight-fn
   (delay (modules/load-fn 'app.util.code-highlight/highlight!)))
 
-;; (def highlight-fn
-;;   (delay (modules/load-fn app.util.code-highlight/highlight!)))
-
 (mf/defc code-block
   {::mf/wrap-props false}
   [{:keys [code type]}]

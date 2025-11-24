@@ -11,48 +11,10 @@
    [cljs.compiler :as comp]
    [cljs.env :as env]))
 
-(defn- module-for-ns [env ns]
-  (let [mod (get-in @env/*compiler* [:shadow.build/ns->mod ns])]
-    (when-not mod
-      (throw (ana/error env (str "Could not find module for ns: " ns))))
-    mod))
-
-(defn- module-output-path
-  [env module]
-  (let [modules (get-in @env/*compiler* [:shadow.build.cljs-bridge/state :shadow.build.modules/config])]
-    (get-in modules [(keyword module) :output-name])))
-
-(defn- resolve-module
-  [env thing]
-  (assert (qualified-symbol? thing) "expected qualified keyword")
-
-  (let [current-ns (-> env :ns :name)
-        ns         (-> thing (namespace) (symbol))
-        module     (module-for-ns env ns)
-        path       (module-output-path env module)]
-    (swap! env/*compiler* assoc-in [::ana/namespaces current-ns ::ns-refs ns] module)
-    (vector
-     (str "./" path)
-     `(fn* [] ~(list 'js* (str (comp/munge thing)))))))
-
 (defmacro load
-  [thing]
-  (let [[module-path deref-fn] (resolve-module &env thing)]
-    `(let [deref-fn# ~deref-fn]
-       (-> (shadow.esm/dynamic-import ~module-path)
-           (.then (fn [_#] (cljs.core/js-obj "default" (deref-fn#))))))))
-
-(defmacro load*
   [thing]
   `(-> (shadow.esm/load-by-name ~thing)
        (.then (fn [f#] (cljs.core/js-obj "default" (f#))))))
-
-;; (defmacro load-fn
-;;   [thing]
-;;   (let [[module-path deref-fn] (resolve-module &env thing)]
-;;     `(let [deref-fn# ~deref-fn]
-;;        (-> (shadow.esm/dynamic-import ~module-path)
-;;            (.then (fn [_#] (deref-fn#)))))))
 
 (defmacro load-fn
   [thing]

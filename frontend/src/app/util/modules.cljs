@@ -14,29 +14,3 @@
   "Dynamic esm module import import"
   [path]
   (dynamic-import (str path)))
-
-(defn getter-proxy [f]
-  (js/Proxy. #js {}
-             #js {:get
-                  (fn [target prop receiver]
-                    (if (= prop "default")
-                      (f)
-                      (js/Reflect.get target prop receiver)))
-
-                  :has
-                  (fn [target prop]
-                    (or (= prop "default")
-                        (js/Reflect.has target prop)))
-
-                  :ownKeys
-                  (fn [_] #js ["default"])}))
-
-
-                  ;; :getOwnPropertyDescriptor
-                  ;; (fn [target prop]
-                  ;;   (if (= prop "default")
-                  ;;     #js {:configurable true
-                  ;;          :enumerable   true
-                  ;;          :value        (f)
-                  ;;          :writable     true})
-                  ;;   (js/Reflect.getOwnPropertyDescriptor target prop))

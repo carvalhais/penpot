@@ -37,22 +37,22 @@
    [rumext.v2 :as mf]))
 
 (def auth-page
-  (mf/lazy #(mod/load* 'app.main.ui.auth/auth-page*)))
+  (mf/lazy #(mod/load 'app.main.ui.auth/auth-page*)))
 
-(def verify-token-page
-  (mf/lazy #(mod/load app.main.ui.auth.verify-token/verify-token)))
+(def verify-token-page*
+  (mf/lazy #(mod/load 'app.main.ui.auth.verify-token/verify-token-page*)))
 
 (def viewer-page*
-  (mf/lazy #(mod/load app.main.ui.viewer/viewer*)))
+  (mf/lazy #(mod/load 'app.main.ui.viewer/viewer-page*)))
 
 (def dashboard-page*
-  (mf/lazy #(mod/load* 'app.main.ui.dashboard/dashboard*)))
+  (mf/lazy #(mod/load 'app.main.ui.dashboard/dashboard-page*)))
 
 (def settings-page*
-  (mf/lazy #(mod/load app.main.ui.settings/settings*)))
+  (mf/lazy #(mod/load 'app.main.ui.settings/settings-page*)))
 
 (def workspace-page*
-  (mf/lazy #(mod/load app.main.ui.workspace/workspace*)))
+  (mf/lazy #(mod/load 'app.main.ui.workspace/workspace-page*)))
 
 (mf/defc workspace-legacy-redirect*
   {::mf/props :obj
@@ -190,7 +190,7 @@
        [:? [:& auth-page {:route route}]]
 
        :auth-verify-token
-       [:? [:& verify-token-page {:route route}]]
+       [:? [:& verify-token-page* {:route route}]]
 
        (:settings-profile
         :settings-password
