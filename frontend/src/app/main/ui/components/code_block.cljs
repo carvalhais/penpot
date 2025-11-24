@@ -14,7 +14,10 @@
    [rumext.v2 :as mf]))
 
 (def highlight-fn
-  (delay (modules/load-fn app.util.code-highlight/highlight!)))
+  (delay (modules/load-fn 'app.util.code-highlight/highlight!)))
+
+;; (def highlight-fn
+;;   (delay (modules/load-fn app.util.code-highlight/highlight!)))
 
 (mf/defc code-block
   {::mf/wrap-props false}
@@ -25,6 +28,7 @@
     (mf/with-effect [code type]
       (when-let [node (mf/ref-val block-ref)]
         (->> @highlight-fn
+             (p/fmap (fn [f] (f)))
              (p/fnly (fn [f cause]
                        (if cause
                          (js/console.error cause)

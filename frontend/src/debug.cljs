@@ -460,4 +460,4 @@
 
 (defn ^:export debug-esm
   []
-  (prn esm/loadables))
+  esm/loadables)

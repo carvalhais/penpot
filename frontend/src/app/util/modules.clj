@@ -42,9 +42,18 @@
        (-> (shadow.esm/dynamic-import ~module-path)
            (.then (fn [_#] (cljs.core/js-obj "default" (deref-fn#))))))))
 
+(defmacro load*
+  [thing]
+  `(-> (shadow.esm/load-by-name ~thing)
+       (.then (fn [f#] (cljs.core/js-obj "default" (f#))))))
+
+;; (defmacro load-fn
+;;   [thing]
+;;   (let [[module-path deref-fn] (resolve-module &env thing)]
+;;     `(let [deref-fn# ~deref-fn]
+;;        (-> (shadow.esm/dynamic-import ~module-path)
+;;            (.then (fn [_#] (deref-fn#)))))))
+
 (defmacro load-fn
   [thing]
-  (let [[module-path deref-fn] (resolve-module &env thing)]
-    `(let [deref-fn# ~deref-fn]
-       (-> (shadow.esm/dynamic-import ~module-path)
-           (.then (fn [_#] (deref-fn#)))))))
+  `(shadow.esm/load-by-name ~thing))

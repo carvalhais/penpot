@@ -37,7 +37,7 @@
    [rumext.v2 :as mf]))
 
 (def auth-page
-  (mf/lazy #(mod/load app.main.ui.auth/auth)))
+  (mf/lazy #(mod/load* 'app.main.ui.auth/auth-page*)))
 
 (def verify-token-page
   (mf/lazy #(mod/load app.main.ui.auth.verify-token/verify-token)))
@@ -46,7 +46,7 @@
   (mf/lazy #(mod/load app.main.ui.viewer/viewer*)))
 
 (def dashboard-page*
-  (mf/lazy #(mod/load app.main.ui.dashboard/dashboard*)))
+  (mf/lazy #(mod/load* 'app.main.ui.dashboard/dashboard*)))
 
 (def settings-page*
   (mf/lazy #(mod/load app.main.ui.settings/settings*)))

@@ -10,6 +10,7 @@
    [app.util.dom :as dom]))
 
 (defn highlight!
+  {:lazy-loadable true}
   [node]
   (dom/set-data! node "highlighted" nil)
   (hljs/highlightElement node))
