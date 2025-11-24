@@ -39,6 +39,7 @@
    [cljs.pprint :refer [pprint]]
    [cuerdas.core :as str]
    [potok.v2.core :as ptk]
+   [shadow.esm :as esm]
    [promesa.core :as p]))
 
 (l/set-level! :debug)
@@ -456,3 +457,7 @@
 (defn ^:export network-averages
   []
   (.log js/console (clj->js @http/network-averages)))
+
+(defn ^:export debug-esm
+  []
+  (prn esm/loadables))

@@ -44,8 +44,11 @@
     <section id="modal"></section>
 
     {{# manifest}}
-    <script type="module" src="js/libs.js?ts={{& ts}}"></script>
-    <script type="module" src="{{& main}}"></script>
+    <script type="module" src="{{& libs}}"></script>
+    <script type="module">
+      import { init } from "{{& main}}";
+      init();
+    </script>
     {{/manifest}}
   </body>
 </html>

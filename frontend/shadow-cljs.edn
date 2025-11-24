@@ -19,7 +19,7 @@
     :main
     {:entries [app.main app.plugins.api]
      :depends-on #{:shared}
-     :init-fn app.main/init}
+     :exports {init app.main/init}}
 
     :util-highlight
     {:entries [app.util.code-highlight]
@@ -49,12 +49,12 @@
     :render
     {:entries [app.render]
      :depends-on #{:shared}
-     :init-fn app.render/init}
+     :exports {init app.render/init}}
 
     :rasterizer
     {:entries [app.rasterizer]
      :depends-on #{:shared}
-     :init-fn app.rasterizer/init}}
+     :exports {init app.rasterizer/init}}}
 
    :js-options
    {:entry-keys ["module" "browser" "main"]

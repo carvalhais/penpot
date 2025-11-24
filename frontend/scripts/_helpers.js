@@ -193,25 +193,27 @@ async function readShadowManifest() {
 
     const index = {
       ts: ts,
-      config: "js/config.js?ts=" + ts,
-      polyfills: "js/polyfills.js?ts=" + ts,
-      worker_main: "js/worker/main.js?ts=" + ts,
+      config: "./js/config.js?ts=" + ts,
+      polyfills: "./js/polyfills.js?ts=" + ts,
+      worker_main: "./js/worker/main.js?ts=" + ts,
+      libs: "./js/libs.js?ts=" + ts,
     };
 
     for (let item of content) {
-      index[item.name] = "js/" + item["output-name"];
+      index[item.name] = "./" + item["output-name"] + "?ts=" + ts;
     }
 
     return index;
   } catch (cause) {
     const index = {
       ts: ts,
-      config: "js/config.js?ts=" + ts,
-      polyfills: "js/polyfills.js?ts=" + ts,
-      main: "js/main.js?ts=" + ts,
-      shared: "js/shared.js?ts=" + ts,
+      config: "./js/config.js?ts=" + ts,
+      polyfills: "./js/polyfills.js?ts=" + ts,
+      main: "./js/main.js?ts=" + ts,
+      shared: "./js/shared.js?ts=" + ts,
       worker_main: "./js/worker/main.js?ts=" + ts,
-      rasterizer: "js/rasterizer.js?ts=" + ts,
+      rasterizer: "./js/rasterizer.js?ts=" + ts,
+      libs: "./js/libs.js?ts=" + ts,
     };
 
     return index;

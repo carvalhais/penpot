@@ -19,8 +19,11 @@
   </head>
   <body>
     {{# manifest}}
-    <script type="module" src="js/libs.js?ts={{& ts}}"></script>
-    <script type="module" src="{{& rasterizer}}"></script>
+    <script type="module" src="{{& libs}}"></script>
+    <script type="module">
+      import { init } from "{{& rasterizer}}";
+      init();
+    </script>
     {{/manifest}}
   </body>
 </html>
