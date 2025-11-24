@@ -77,24 +77,24 @@
 (defn token-section-icon
   [type]
   (case type
-    :border-radius "corner-radius"
-    :color "drop"
-    :boolean "boolean-difference"
-    :font-family "text-font-family"
-    :font-size "text-font-size"
-    :letter-spacing "text-letterspacing"
-    :text-case "text-mixed"
-    :text-decoration "text-underlined"
-    :font-weight "text-font-weight"
-    :typography "text-typography"
-    :opacity "percentage"
-    :number "number"
-    :rotation "rotation"
-    :spacing "padding-extended"
-    :string "text-mixed"
-    :stroke-width "stroke-size"
-    :dimensions "expand"
-    :sizing "expand"
+    :border-radius i/corner-radius
+    :color i/drop
+    :boolean i/boolean-difference
+    :font-family i/text-font-family
+    :font-size i/text-font-size
+    :letter-spacing i/text-letterspacing
+    :text-case i/text-mixed
+    :text-decoration i/text-underlined
+    :font-weight i/text-font-weight
+    :typography i/text-typography
+    :opacity i/percentage
+    :number i/number
+    :rotation i/rotation
+    :spacing i/padding-extended
+    :string i/text-mixed
+    :stroke-width i/stroke-size
+    :dimensions i/expand
+    :sizing i/expand
     "add"))
 
 (def ^:private schema:folder-node
@@ -124,22 +124,29 @@
          (when children-fn
            (let [children (children-fn)]
              (for [child children]
-               (if (:is-token child)
+               (let [
+                     _ (pp/pprint "Rendering token pill")
+                     _ (pp/pprint {:token (:token child)})
+                     _ (pp/pprint {:selected-shapes selected-shapes})
+                     _ (pp/pprint {:is-selected-inside-layout is-selected-inside-layout})
+                     _ (pp/pprint {:active-theme-tokens active-theme-tokens})
+               ]
+                 (if (:is-token child)
                  [:> token-pill*
-                  {:key (:token child)
+                  {:key (get-in child [:token :id])
                    :token (:token child)
                    :selected-shapes selected-shapes
                    :is-selected-inside-layout is-selected-inside-layout
                    :active-theme-tokens active-theme-tokens
                    :on-click on-token-pill-click
                    :on-context-menu on-context-menu}]
-                 [:> folder-node* {:key child
+                 [:> folder-node* {:key (:path child)
                                    :node child
                                    :selected-shapes selected-shapes
                                    :is-selected-inside-layout is-selected-inside-layout
                                    :active-theme-tokens active-theme-tokens
                                    :on-token-pill-click on-token-pill-click
-                                   :on-context-menu on-context-menu}]))))))]))
+                                   :on-context-menu on-context-menu}])))))))]))
 
 (def ^:private schema:token-tree
   [:map
@@ -157,24 +164,23 @@
     [:div {:class (stl/css :token-tree-wrapper)}
      (for [node tree]
        [:div {:key (:path node)}
-        (if (:is-token node)
+        (let [_ (pp/pprint {:node node})]
+          (if (:is-token node)
           ;; Render token pill
-          [:> token-pill*
-           {:key (:token node)
-            :token (:token node)
-            :selected-shapes selected-shapes
-            :is-selected-inside-layout is-selected-inside-layout
-            :active-theme-tokens active-theme-tokens
-            :on-click on-token-pill-click
-            :on-context-menu on-context-menu}]
+            [:> token-pill*
+             {:token (:token node)
+              :selected-shapes selected-shapes
+              :is-selected-inside-layout is-selected-inside-layout
+              :active-theme-tokens active-theme-tokens
+              :on-click on-token-pill-click
+              :on-context-menu on-context-menu}]
           ;; Render segment folder
-          [:> folder-node* {:key node
-                            :node node
-                            :selected-shapes selected-shapes
-                            :is-selected-inside-layout is-selected-inside-layout
-                            :active-theme-tokens active-theme-tokens
-                            :on-token-pill-click on-token-pill-click
-                            :on-context-menu on-context-menu}])])]))
+            [:> folder-node* {:node node
+                              :selected-shapes selected-shapes
+                              :is-selected-inside-layout is-selected-inside-layout
+                              :active-theme-tokens active-theme-tokens
+                              :on-token-pill-click on-token-pill-click
+                              :on-context-menu on-context-menu}]))])]))
 
 (def ^:private schema:token-group
   [:map
@@ -248,6 +254,8 @@
     [:div {:class (stl/css :token-section-wrapper)}
 
      [:div
+      [:> icon* {:icon-id (token-section-icon type)
+              :class (stl/css :token-section-icon)}]
       [:span {:on-click on-toggle-open-click} title]
       (when is-open
         [:div
