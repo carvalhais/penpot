@@ -51,6 +51,7 @@
     :ref-shape-is-head
     :ref-shape-is-not-head
     :shape-ref-in-main
+    :component-id-mismatch
     :root-main-not-allowed
     :nested-main-not-allowed
     :root-copy-not-allowed
@@ -327,6 +328,19 @@
                     :component-file (:component-file ref-shape)
                     :component-id (:component-id ref-shape)))))
 
+(defn- check-ref-component-id
+  "Validate that if the copy has not been swwpped, the component-id is the same
+   as the referenced shape in the near main."
+  [shape file page libraries]
+  (when (nil? (ctk/get-swap-slot shape))
+    (prn "checking " (:id shape))
+    (let [ref-shape (ctf/find-ref-shape file page libraries shape :include-deleted? true)]
+      (when (and ref-shape
+                 (not= (:component-id shape) (:component-id ref-shape)))
+        (report-error :component-id-mismatch
+                      "Nested copy component-id must be the same as the near main"
+                      shape file page)))))
+
 (defn- check-empty-swap-slot
   "Validate that this shape does not have any swap slot."
   [shape file page]
@@ -422,8 +436,10 @@
   ;; We can have situations where the nested copy and the ancestor copy come from different libraries and some of them have been dettached
   ;; so we only validate the shape-ref if the ancestor is from a valid library
   (when library-exists
+    (prn "brixt")
     (check-component-ref shape file page libraries)
-    (check-ref-is-head shape file page libraries))
+    (check-ref-is-head shape file page libraries)
+    (check-ref-component-id shape file page libraries))
   (run! #(check-shape % file page libraries :context :copy-nested) (:shapes shape)))
 
 (defn- check-shape-main-not-root
