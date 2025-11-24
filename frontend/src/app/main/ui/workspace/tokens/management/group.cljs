@@ -8,28 +8,27 @@
 (ns app.main.ui.workspace.tokens.management.group
   (:require-macros [app.main.style :as stl])
   (:require
+   [app.common.types.token :as cto]
    [app.main.data.modal :as modal]
    [app.main.data.workspace.tokens.application :as dwta]
    [app.main.data.workspace.tokens.library-edit :as dwtl]
    [app.main.refs :as refs]
    [app.main.store :as st]
    [app.main.ui.context :as ctx]
-   [app.main.ui.ds.buttons.icon-button :refer [icon-button*]]
    [app.main.ui.ds.foundations.assets.icon :as i :refer [icon*]]
-   [app.main.ui.workspace.sidebar.assets.common :as cmm]
    [app.main.ui.workspace.tokens.management.token-pill :refer [token-pill*]]
    [app.util.dom :as dom]
-   [app.util.i18n :refer [tr]]
+   [cljs.pprint :as pp]
    [cuerdas.core :as str]
    [rumext.v2 :as mf]
-   [cljs.pprint :as pp]))
+   [app.common.data :as d]))
 
 (defn- parse-token-path
   "Splits a token name into path segments"
   [token-name]
   (str/split token-name #"\."))
 
-(defn group-by-first-segment
+(defn- group-by-first-segment
   "Groups tokens by their first path segment."
   [tokens]
   (reduce (fn [acc token]
@@ -42,7 +41,7 @@
           {}
           tokens))
 
-(defn build-tree-node
+(defn- build-tree-node
   "Builds a single tree node with lazy children."
   [segment-name segment-tokens parent-path depth]
   (let [current-path (if parent-path
@@ -67,7 +66,7 @@
                                 (build-tree-node name tokens current-path (inc depth)))
                               grouped))))}))
 
-(defn build-tree-root
+(defn- build-tree-root
   "Builds the root level of the tree."
   [tokens]
   (let [grouped (group-by-first-segment tokens)]
@@ -98,9 +97,18 @@
     :sizing "expand"
     "add"))
 
+(def ^:private schema:folder-node
+  [:map
+   [:node :any]
+   [:selected-shapes :any]
+   [:is-selected-inside-layout {:optional true} :boolean]
+   [:active-theme-tokens {:optional true} :any]
+   [:on-token-pill-click {:optional true} fn?]
+   [:on-context-menu {:optional true} fn?]])
+
 (mf/defc folder-node*
-  {::mf/private true}
-  [{:keys [node on-toggle]}]
+  {::mf/schema schema:folder-node}
+  [{:keys [node selected-shapes is-selected-inside-layout active-theme-tokens on-token-pill-click on-context-menu]}]
   (let [expanded* (mf/use-state false)
         expanded (deref expanded*)
         swap-folder-expanded #(swap! expanded* not)]
@@ -117,25 +125,69 @@
            (let [children (children-fn)]
              (for [child children]
                (if (:is-token child)
-                 [:> token-pill* {:token (:token child)}]
-                 [:> folder-node* {:node child :on-toggle on-toggle}]))))))]))
+                 [:> token-pill*
+                  {:key (:token child)
+                   :token (:token child)
+                   :selected-shapes selected-shapes
+                   :is-selected-inside-layout is-selected-inside-layout
+                   :active-theme-tokens active-theme-tokens
+                   :on-click on-token-pill-click
+                   :on-context-menu on-context-menu}]
+                 [:> folder-node* {:key child
+                                   :node child
+                                   :selected-shapes selected-shapes
+                                   :is-selected-inside-layout is-selected-inside-layout
+                                   :active-theme-tokens active-theme-tokens
+                                   :on-token-pill-click on-token-pill-click
+                                   :on-context-menu on-context-menu}]))))))]))
+
+(def ^:private schema:token-tree
+  [:map
+   [:tokens :any]
+   [:selected-shapes :any]
+   [:is-selected-inside-layout {:optional true} :boolean]
+   [:active-theme-tokens {:optional true} :any]
+   [:on-token-pill-click {:optional true} fn?]
+   [:on-context-menu {:optional true} fn?]])
 
 (mf/defc token-tree*
-  {::mf/private true}
-  [{:keys [tokens]}]
+  {::mf/schema schema:token-tree}
+  [{:keys [tokens selected-shapes is-selected-inside-layout active-theme-tokens on-token-pill-click on-context-menu]}]
   (let [tree (build-tree-root tokens)]
     [:div {:class (stl/css :token-tree-wrapper)}
      (for [node tree]
-       (let [_ (pp/pprint node)]
          [:div {:key (:path node)}
           (if (:is-token node)
           ;; Render token pill
-            [:> token-pill* {:token (:token node)}]
+            [:> token-pill*
+             {:key (:token node)
+              :token (:token node)
+              :selected-shapes selected-shapes
+              :is-selected-inside-layout is-selected-inside-layout
+              :active-theme-tokens active-theme-tokens
+              :on-click on-token-pill-click
+              :on-context-menu on-context-menu}]
           ;; Render segment folder
-            [:> folder-node* {:node node}])]))]))
+            [:> folder-node* {:key node
+                              :node node
+                              :selected-shapes selected-shapes
+                              :is-selected-inside-layout is-selected-inside-layout
+                              :active-theme-tokens active-theme-tokens
+                              :on-token-pill-click on-token-pill-click
+                              :on-context-menu on-context-menu}])])]))
+
+(def ^:private schema:token-group
+  [:map
+   [:type :keyword]
+   [:tokens :any]
+   [:selected-shapes :any]
+   [:is-selected-inside-layout {:optional true} [:maybe :boolean]]
+   [:active-theme-tokens {:optional true} :any]
+   [:on-token-pill-click {:optional true} fn?]
+   [:on-context-menu {:optional true} fn?]])
 
 (mf/defc token-group*
-  {::mf/private true}
+   {::mf/schema schema:token-group}
   [{:keys [type tokens selected-shapes is-selected-inside-layout active-theme-tokens is-open selected-ids]}]
   (let [{:keys [modal title]}
         (get dwta/token-properties type)
@@ -144,6 +196,8 @@
 
         can-edit?
         (mf/use-ctx ctx/can-edit?)
+
+        is-selected-inside-layout (d/nilv is-selected-inside-layout false)
 
         tokens
         (mf/with-memo [tokens]
@@ -185,9 +239,11 @@
          (mf/deps not-editing? selected-ids)
          (fn [event token]
            (dom/stop-propagation event)
-           (when (and not-editing? (seq selected-shapes) (not= (:type token) :number))
-             (st/emit! (dwta/toggle-token {:token token
-                                           :shape-ids selected-ids})))))]
+           (let [_ (pp/pprint "on-token-pill-click")
+                 _ (pp/pprint {:token token :selected-ids selected-ids})]
+             (when (and not-editing? (seq selected-shapes) (not= (:type token) :number))
+                  (st/emit! (dwta/toggle-token {:token token
+                                                :shape-ids selected-ids}))))))]
 
     [:div {:class (stl/css :token-section-wrapper)}
 
@@ -196,10 +252,12 @@
       (when is-open
         [:div
          [:> token-tree* {:tokens tokens
-                                       ;; :on-token-pill-click on-token-pill-click
-                                       ;; :on-context-menu on-context-menu
-                          }]
-         [:div {:class (stl/css :token-pills-wrapper)}
+                          :selected-shapes selected-shapes
+                          :is-selected-inside-layout is-selected-inside-layout
+                          :on-token-pill-click on-token-pill-click
+                          :on-context-menu on-context-menu
+                          :active-theme-tokens active-theme-tokens}]
+         #_[:div {:class (stl/css :token-pills-wrapper)}
           (for [token tokens]
             [:> token-pill*
              {:key (:name token)
