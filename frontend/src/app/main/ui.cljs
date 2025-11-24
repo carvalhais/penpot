@@ -31,9 +31,9 @@
    [app.main.ui.static :as static]
    [app.util.dom :as dom]
    [app.util.i18n :refer [tr]]
+   [app.util.modules :as mod]
    [app.util.theme :as theme]
    [beicon.v2.core :as rx]
-   [app.util.modules :as mod]
    [rumext.v2 :as mf]))
 
 (def auth-page

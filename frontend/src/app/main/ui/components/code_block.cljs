@@ -8,9 +8,9 @@
   (:require-macros [app.main.style :as stl])
   (:require
    [app.common.data.macros :as dm]
+   [app.util.modules :as modules]
    [cuerdas.core :as str]
    [promesa.core :as p]
-   [app.util.modules :as modules]
    [rumext.v2 :as mf]))
 
 (def highlight-fn

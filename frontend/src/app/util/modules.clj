@@ -22,29 +22,45 @@
   (let [modules (get-in @env/*compiler* [:shadow.build.cljs-bridge/state :shadow.build.modules/config])]
     (get-in modules [(keyword module) :output-name])))
 
-(defmacro resolve
-  [thing]
+(defn- resolve-module
+  [env thing]
   (assert (qualified-symbol? thing) "expected qualified keyword")
 
-  (let [current-ns (-> &env :ns :name)
+  (let [current-ns (-> env :ns :name)
         ns         (-> thing (namespace) (symbol))
-        module     (module-for-ns &env ns)
-        path       (module-output-path &env module)]
+        module     (module-for-ns env ns)
+        path       (module-output-path env module)]
     (swap! env/*compiler* assoc-in [::ana/namespaces current-ns ::ns-refs ns] module)
-    `(vector
-      (str "./" ~path)
-      (fn* [] ~(list 'js* (str (comp/munge thing)))))))
+    (vector
+     (str "./" path)
+     `(fn* [] ~(list 'js* (str (comp/munge thing)))))))
+
+
+;; (defmacro resolve
+;;   [thing]
+;;   (let [
+
+;;   (assert (qualified-symbol? thing) "expected qualified keyword")
+
+;;   (let [current-ns (-> &env :ns :name)
+;;         ns         (-> thing (namespace) (symbol))
+;;         module     (module-for-ns &env ns)
+;;         path       (module-output-path &env module)]
+;;     (swap! env/*compiler* assoc-in [::ana/namespaces current-ns ::ns-refs ns] module)
+;;     `(vector
+;;       (str "./" ~path)
+;;       (fn* [] ~(list 'js* (str (comp/munge thing)))))))
 
 (defmacro load
   [thing]
-  `(let [[module-path# deref-fn#] (app.util.modules/resolve ~thing)]
-     (-> (shadow.esm/dynamic-import module-path#)
-         (.then (fn [_#]
-                  (cljs.core/js-obj "default" (deref-fn#)))))))
+  (let [[module-path deref-fn] (resolve-module &env thing)]
+    `(let [deref-fn# ~deref-fn]
+       (-> (shadow.esm/dynamic-import ~module-path)
+           (.then (fn [_#] (cljs.core/js-obj "default" (deref-fn#))))))))
 
 (defmacro load-fn
   [thing]
-  `(let [[module-path# deref-fn#] (app.util.modules/resolve ~thing)]
-     (-> (shadow.esm/dynamic-import module-path#)
-         (.then (fn [_#]
-                  (deref-fn#))))))
+  (let [[module-path deref-fn] (resolve-module &env thing)]
+    `(let [deref-fn# ~deref-fn]
+       (-> (shadow.esm/dynamic-import ~module-path)
+           (.then (fn [_#] (deref-fn#)))))))

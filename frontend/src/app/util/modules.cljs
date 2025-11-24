@@ -5,6 +5,12 @@
 ;; Copyright (c) KALEIDOS INC
 
 (ns app.util.modules
+  (:refer-clojure :exclude [import])
   (:require-macros [app.util.modules])
   (:require
-   [shadow.esm]))
+   [shadow.esm :refer [dynamic-import]]))
+
+(defn import
+  "Dynamic esm module import import"
+  [path]
+  (dynamic-import (str path)))

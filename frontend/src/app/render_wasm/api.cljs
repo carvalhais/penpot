@@ -41,6 +41,7 @@
    [app.util.functions :as fns]
    [app.util.globals :as ug]
    [app.util.text.content :as tc]
+   [app.util.modules :as mod]
    [beicon.v2.core :as rx]
    [promesa.core :as p]
    [rumext.v2 :as mf]))
@@ -1351,7 +1352,7 @@
   (delay
     (if (exists? js/dynamicImport)
       (let [uri (cf/resolve-static-asset "js/render_wasm.js")]
-        (->> (js/dynamicImport (str uri))
+        (->> (mod/import uri)
              (p/mcat init-wasm-module)
              (p/fmap
               (fn [default]

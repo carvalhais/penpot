@@ -24,8 +24,7 @@
    [okulary.core :as l]
    [promesa.core :as p]
    [rumext.v2 :as mf]
-   [shadow.esm :refer (dynamic-import)]
-   ))
+   [app.util.modules :as mod]))
 
 (log/set-level! :trace)
 
@@ -101,7 +100,7 @@
 (def init-wasm
   (delay
     (let [uri (cf/resolve-static-asset "js/render_wasm.js")]
-      (-> (dynamic-import (str uri))
+      (-> (mod/import (str uri))
           (p/then #(wasm.api/init-wasm-module %))
           (p/then #(set! wasm/internal-module %))))))
 
