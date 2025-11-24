@@ -1439,11 +1439,12 @@
                                 :validate-token default-validate-token
                                 :tokens-tree-in-selected-set tokens-tree-in-selected-set
                                 :token token})
-        font-family-props (mf/spread-props props {:validate-token validate-font-family-token})]
+        font-family-props (mf/spread-props props {:validate-token validate-font-family-token})
+        typography-props (mf/spread-props props {:validate-token validate-typography-token})]
 
     (case token-type
       :color [:> color/form* props]
-      :typography [:> typography-form* props]
+      :typography [:> typography/form* typography-props]
       :shadow [:> shadow-form* props]
       :font-family [:> font-family/form* font-family-props]
       :text-case [:> text-case/form* props]

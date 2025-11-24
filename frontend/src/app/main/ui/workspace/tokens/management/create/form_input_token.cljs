@@ -20,7 +20,11 @@
 
 (defn- resolve-value
   [tokens prev-token value]
-  (let [token
+  (let [_ (prn "Resolving value:" value)
+        _ (prn "prev-token:" prev-token)
+        ;; Prev-token puede contener o un token a editar, completo con su ID...
+        ;;  o un mapa con type: input-name
+        token
         {:value value
          :name "__PENPOT__TOKEN__NAME__PLACEHOLDER__"}
 
@@ -28,13 +32,16 @@
         (-> tokens
             ;; Remove previous token when renaming a token
             (dissoc (:name prev-token))
-            (update (:name token) #(ctob/make-token (merge % prev-token token))))]
+            (update (:name token) #(ctob/make-token (merge % prev-token token))))
+        _ (.log js/console "Tokens for resolution:" (clj->js tokens))]
 
     (->> tokens
          (sd/resolve-tokens-interactive)
          (rx/mapcat
           (fn [resolved-tokens]
             (let [{:keys [errors resolved-value] :as resolved-token} (get resolved-tokens (:name token))]
+              (prn (get resolved-tokens (:name token)))
+              (prn "Resolved" resolved-value "with errors" errors)
               (if resolved-value
                 (rx/of {:value resolved-value})
                 (rx/of {:error (first errors)}))))))))
@@ -59,6 +66,7 @@
         value
         (get-in @form [:data input-name] "")
 
+        ;; TODO: MOdificar este stream para que si llega un token de composite mire si el name es diferente a value
         resolve-stream
         (mf/with-memo [token]
           (if-let [value (:value token)]
@@ -92,8 +100,9 @@
           props)]
 
     (mf/with-effect [resolve-stream tokens token input-name]
-      (let [subs (->> resolve-stream
-                      (rx/debounce 300)
+      (let [_ (prn token )
+            subs (->> resolve-stream
+                      ;; (rx/debounce 300)
                       (rx/mapcat (partial resolve-value tokens token))
                       (rx/map (fn [result]
                                 (d/update-when result :error

@@ -24,6 +24,7 @@
    [app.main.ui.ds.foundations.typography.heading :refer [heading*]]
    [app.main.ui.ds.notifications.context-notification :refer [context-notification*]]
    [app.main.ui.forms :as fc]
+   [app.main.ui.workspace.tokens.management.create.combobox-token-fonts :refer [font-picker-combobox*]]
    [app.main.ui.workspace.tokens.management.create.form-input-token :refer [form-input-token*]]
    [app.util.dom :as dom]
    [app.util.forms :as fm]
@@ -45,7 +46,28 @@
        [:fn {:error/fn #(tr "workspace.tokens.token-name-duplication-validation-error" (:value %))}
         #(not (cft/token-name-path-exists? % tokens-tree))]]]
 
-     [:value ::sm/text]
+    ;;  TODO: revisar si la funcion de self-reference podemos meterla aqui
+
+     [:value {:optional true} [:or
+                               [:map
+                                [:font-family {:optional true} ::sm/text]
+                                [:font-size {:optional true} ::sm/text]
+                                [:font-weight {:optional true} ::sm/text]
+                                [:line-height {:optional true} ::sm/text]
+                                [:letter-spacing {:optional true} ::sm/text]
+                                [:text-case {:optional true} ::sm/text]
+                                [:text-decoration {:optional true} ::sm/text]]
+
+                               ::sm/text]]
+
+     [:font-family {:optional true} ::sm/text]
+     [:font-size {:optional true} ::sm/text]
+     [:font-weight {:optional true} ::sm/text]
+     [:line-height {:optional true} ::sm/text]
+     [:letter-spacing {:optional true} ::sm/text]
+     [:text-case {:optional true} ::sm/text]
+     [:text-decoration {:optional true} ::sm/text]
+     [:reference {:optional true} ::sm/text]
 
      [:resolved-value ::sm/any]
 
@@ -63,7 +85,7 @@
 
   (let [token
         (mf/with-memo [token]
-          (or token {:type :text-case}))
+          (or token {:type :typography}))
 
         token-type
         (get token :type)
@@ -92,7 +114,8 @@
         initial
         (mf/with-memo [token]
           {:name (:name token "")
-           :value (:value token "")
+          ;;  BORRARRRRRRRRRRRRRRRRRRRRR
+           :value (:value token "1")
            :description (:description token "")})
 
         form
@@ -103,7 +126,8 @@
         (not= (get-in @form [:data :name])
               (:name initial))
 
-        ;; TODO: Revisar si siempre se abre en composite
+        ;; TODO: Revisar si siempre se abre en composite,
+        ;; si llega token con referencia deberia abrir en referencia
         active-tab* (mf/use-state "composite")
         active-tab (deref active-tab*)
 
@@ -167,7 +191,9 @@
                                             :value (:value valid-token)
                                             :description description}))
                       (dwtp/propagate-workspace-tokens)
-                      (modal/hide))))))))]
+                      (modal/hide))))))))
+                      
+                      _ (prn @form)]
 
     [:> fc/form* {:class (stl/css :form-wrapper)
                   :form form
@@ -176,20 +202,6 @@
 
       [:> heading* {:level 2 :typography "headline-medium" :class (stl/css :form-modal-title)}
        (tr "workspace.tokens.create-token" token-type)]
-      [:div {:class (stl/css :title-bar)}
-       [:div {:class (stl/css :title)} (tr "labels.typography")]
-       [:& radio-buttons {:class (stl/css :listing-options)
-                          :selected active-tab
-                          :on-change on-toggle-tab
-                          :name "reference-composite-tab"}
-        [:& radio-button {:icon i/layers
-                          :value "composite"
-                          :title (tr "workspace.tokens.individual-tokens")
-                          :id "composite-opt"}]
-        [:& radio-button {:icon i/tokens
-                          :value "reference"
-                          :title (tr "workspace.tokens.use-reference")
-                          :id "reference-opt"}]]]
 
       [:div {:class (stl/css :input-row)}
        [:> fc/form-input* {:id "token-name"
@@ -204,14 +216,87 @@
          [:div {:class (stl/css :warning-name-change-notification-wrapper)}
           [:> context-notification*
            {:level :warning :appearance :ghost} (tr "workspace.tokens.warning-name-change")]])]
+      [:div {:class (stl/css :title-bar)}
+       [:div {:class (stl/css :title)} (tr "labels.typography")]
+       [:& radio-buttons {:class (stl/css :listing-options)
+                          :selected active-tab
+                          :on-change on-toggle-tab
+                          :name "reference-composite-tab"}
+        [:& radio-button {:icon i/layers
+                          :value "composite"
+                          :title (tr "workspace.tokens.individual-tokens")
+                          :id "composite-opt"}]
+        [:& radio-button {:icon i/tokens
+                          :value "reference"
+                          :title (tr "workspace.tokens.use-reference")
+                          :id "reference-opt"}]]]
+      (if (= active-tab "composite")
+        [:div {:class (stl/css :inputs-wrapper)}
+         [:div {:class (stl/css :input-row)}
+          [:> font-picker-combobox*
+           {:icon i/text-font-family
+            :placeholder (tr "workspace.tokens.token-font-family-value-enter")
+            :aria-label  (tr "workspace.tokens.token-font-family-value")
+            :name :font-family
+            :token token
+            :tokens tokens}]]
+         [:div {:class (stl/css :input-row)}
+          [:> form-input-token*
+           {:aria-label "Font Size"
+            :icon i/text-font-size
+            :placeholder (tr "workspace.tokens.font-size-value-enter")
+            :name :font-size
+            :token {:type :font-size}
+            :tokens tokens}]]
+         [:div {:class (stl/css :input-row)}
+          [:> form-input-token*
+           {:aria-label "Font Weight"
+            :icon i/text-font-weight
+            :placeholder (tr "workspace.tokens.font-weight-value-enter")
+            :name :font-weight
+            :token token
+            :tokens tokens}]]
+         [:div {:class (stl/css :input-row)}
+          [:> form-input-token*
+           {:aria-label "Line Height"
+            :icon i/text-lineheight
+            :placeholder (tr "workspace.tokens.line-height-value-enter")
+            :name :line-height
+            :token token
+            :tokens tokens}]]
+         [:div {:class (stl/css :input-row)}
+          [:> form-input-token*
+           {:aria-label "Letter Spacing"
+            :icon i/text-letterspacing
+            :placeholder (tr "workspace.tokens.letter-spacing-value-enter-composite")
+            :name :letter-spacing
+            :token token
+            :tokens tokens}]]
+         [:div {:class (stl/css :input-row)}
+          [:> form-input-token*
+           {:aria-label "Text Case"
+            :icon i/text-mixed
+            :placeholder (tr "workspace.tokens.text-case-value-enter")
+            :name :text-case
+            :token {:type :text-case}
+            :tokens tokens}]]
+         [:div {:class (stl/css :input-row)}
+          [:> form-input-token*
+           {:aria-label "Text Decoration"
+            :icon i/text-underlined
+            :placeholder (tr "workspace.tokens.text-decoration-value-enter")
+            :name :text-decoration
+            :token token
+            :tokens tokens}]]]
 
-      [:div {:class (stl/css :input-row)}
-       [:> form-input-token*
-        {:placeholder (tr "workspace.tokens.text-case-value-enter")
-         :label (tr "workspace.tokens.token-value")
-         :name :value
-         :token token
-         :tokens tokens}]]
+        [:div {:class (stl/css :input-row)}
+         [:> form-input-token*
+          {:placeholder (tr "workspace.tokens.reference-composite")
+           :aria-label (tr "labels.reference")
+           :icon i/text-typography
+           :name :reference
+           :token token
+           :tokens tokens}]])
 
       [:div {:class (stl/css :input-row)}
        [:> fc/form-input* {:id "token-description"
