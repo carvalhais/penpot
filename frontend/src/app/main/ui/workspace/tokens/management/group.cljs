@@ -156,25 +156,25 @@
   (let [tree (build-tree-root tokens)]
     [:div {:class (stl/css :token-tree-wrapper)}
      (for [node tree]
-         [:div {:key (:path node)}
-          (if (:is-token node)
+       [:div {:key (:path node)}
+        (if (:is-token node)
           ;; Render token pill
-            [:> token-pill*
-             {:key (:token node)
-              :token (:token node)
-              :selected-shapes selected-shapes
-              :is-selected-inside-layout is-selected-inside-layout
-              :active-theme-tokens active-theme-tokens
-              :on-click on-token-pill-click
-              :on-context-menu on-context-menu}]
+          [:> token-pill*
+           {:key (:token node)
+            :token (:token node)
+            :selected-shapes selected-shapes
+            :is-selected-inside-layout is-selected-inside-layout
+            :active-theme-tokens active-theme-tokens
+            :on-click on-token-pill-click
+            :on-context-menu on-context-menu}]
           ;; Render segment folder
-            [:> folder-node* {:key node
-                              :node node
-                              :selected-shapes selected-shapes
-                              :is-selected-inside-layout is-selected-inside-layout
-                              :active-theme-tokens active-theme-tokens
-                              :on-token-pill-click on-token-pill-click
-                              :on-context-menu on-context-menu}])])]))
+          [:> folder-node* {:key node
+                            :node node
+                            :selected-shapes selected-shapes
+                            :is-selected-inside-layout is-selected-inside-layout
+                            :active-theme-tokens active-theme-tokens
+                            :on-token-pill-click on-token-pill-click
+                            :on-context-menu on-context-menu}])])]))
 
 (def ^:private schema:token-group
   [:map
